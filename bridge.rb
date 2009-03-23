@@ -27,12 +27,11 @@ def already_scheduled?(jira_issue)
   comments = $jira.getComments(jira_issue.key)
   comments.each do |comment|
     return true if comment.body =~ /^Scheduled in Tracker/
-    puts comment.body
   end
   false
 end
 
-issues = $jira.getIssuesFromTextSearchWithProject( ['WEB'], '', 1000)
+issues = $jira.getIssuesFromTextSearchWithProject( [$config['jira_project']], '', 1000)
 
 issues.each do |issue|
   if issue.status == '1' # Open issues
