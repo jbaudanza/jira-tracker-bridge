@@ -34,7 +34,7 @@ end
 issues = $jira.getIssuesFromTextSearchWithProject( [$config['jira_project']], '', 1000)
 
 issues.each do |issue|
-  if issue.status == '1' # Open issues
+  if ['1', '4'].include?(issue.status) # 1 = Open issues, 4 = Reopened issues
 
     if already_scheduled?(issue)
       puts "skipping #{issue.key}"
