@@ -5,5 +5,6 @@ tracker_requester: Jonathan Baudanza
 jira_login: jon
 jira_password: gummybears
 jira_host: jira.rupture.ea.com
-jira_port: 8080
+jira_uri_scheme: https
+jira_port: 443
 jira_project: WEB
