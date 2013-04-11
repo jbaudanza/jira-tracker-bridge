@@ -7,7 +7,6 @@ require 'pivotal-tracker'
 require 'yaml'
 
 CONFIG_FILE = 'config.yml'
-update = false
 
 if File.exist?(CONFIG_FILE)
   $config = YAML::load_file(CONFIG_FILE)
@@ -33,11 +32,6 @@ $jira = JIRA::Client.new({ :username => $config['jira_login'],
 # Make connection with Pivotal Tracker
 PivotalTracker::Client.token = $config['tracker_token']
 $project = PivotalTracker::Project.find($config['tracker_project_id'])
-if update
-  $project.stories.all.each do |story|
-    story.delete
-  end
-end
 
 # Get all issues for the project from JIRA
 puts "Getting all the issues for #{$config['jira_project']}"
@@ -62,19 +56,12 @@ type_map = { "1" => "bug",
              "9" => "feature",
              "10" => "feature" }
 
-def jira_project.issues(start_at)
-  response = client.get(client.options[:rest_base_path] + "/search?jql=project%3D'#{key}'&startAt=#{start_at}&expand=changelog")
-  json = self.class.parse_json(response.body)
-  json['issues'].map do |issue|
-    client.Issue.build(issue)
-  end
-end
-
 start_at =  0
 issues = jira_project.issues(start_at)
 while issues.count > 0
   issues.each do |issue|
     # Expand the issue with changelog information
+    # HACK: This is just a copy of the issue.url function
     def issue.url_old
       prefix = '/'
       unless self.class.belongs_to_relationships.empty?
@@ -90,26 +77,16 @@ while issues.count > 0
         self.class.collection_path(client, prefix)
       end
     end
+
+    # Override the issue url to get changelog information
     def issue.url
       self.url_old + '?expand=changelog'
     end
     issue.fetch
 
-    if not update and already_scheduled?(issue)
+    if already_scheduled?(issue)
       puts "skipping #{issue.key}"
       next
-    else
-      issue.comments.each do |comment|
-        if comment.body =~ /^Scheduled in Tracker/
-          begin
-            comment.delete
-            issue.fetch(:reload=>true)
-          rescue Exception=>e
-            next
-          end
-        end
-      end
-    end
 
     # Add the issue to pivotal tracker
     puts "Scheduling #{issue.key} with status=#{status_map[issue.status.id]}, type=#{type_map[issue.issuetype.id]}"
