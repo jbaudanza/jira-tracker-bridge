@@ -3,9 +3,10 @@ This script copies open bugs in Jira into a Pivotal Tracker icebox.
 INSTALLATION
 ============
 
-sudo gem install soap4r
-svn co http://svn.rubyhaus.org/jira4r/trunk/ jira4r
+gem install jira-ruby pivotal-tracker
 
 cp config.yml.example config.yml
 
 To get your Tracker API token, go to "My Profile" in Tracker and look at the API Token section
+
+You may need to open bridge.rb and adjust `status_map` and `type_map` to your liking.
